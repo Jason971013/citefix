@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
+// Force Dynamic: Ensure Next.js reads environment variables at runtime, not build time
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
-  // 调试日志：打印环境变量状态
+  // 调试日志：打印环境变量状态（安全：不打印实际值）
   console.log('Env Check:', { 
     hasKey: !!process.env.OPENAI_API_KEY, 
-    baseUrl: process.env.OPENAI_BASE_URL 
+    hasBaseUrl: !!process.env.OPENAI_BASE_URL 
   });
 
   try {
@@ -49,10 +52,10 @@ export async function POST(request: NextRequest) {
 async function formatReferences(
   text: string
 ): Promise<{ formatted: string; status: string; changes: string[] }> {
-  // 调试日志：打印环境变量状态
+  // 调试日志：打印环境变量状态（安全：不打印实际值）
   console.log('formatReferences Env Check:', { 
     hasKey: !!process.env.OPENAI_API_KEY, 
-    baseUrl: process.env.OPENAI_BASE_URL 
+    hasBaseUrl: !!process.env.OPENAI_BASE_URL 
   });
 
   // 在函数内部初始化 OpenAI 客户端，避免构建时检查 credentials
@@ -72,8 +75,8 @@ async function formatReferences(
     baseURL: baseURL, // 重点：必须显式读取这个变量，确保中转服务正常工作
   });
 
-  // 调试日志：确认 baseURL 已正确传入
-  console.log('OpenAI Client initialized with baseURL:', baseURL);
+  // 调试日志：确认 baseURL 已正确传入（安全：只打印是否存在，不打印实际值）
+  console.log('OpenAI Client initialized with baseURL:', !!baseURL);
 
   const systemPrompt = `你是一个 GB/T 7714-2015 格式化专家。
 请处理用户的引用文本。
@@ -285,3 +288,5 @@ ${text}
     throw error;
   }
 }
+
+// Force Vercel Rebuild: Fix Env Vars
