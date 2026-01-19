@@ -5,10 +5,6 @@ const nextConfig: NextConfig = {
     // ⚠️ Vercel Build: Ignore TypeScript errors
     ignoreBuildErrors: true,
   },
-  eslint: {
-    // ⚠️ Vercel Build: Ignore ESLint errors
-    ignoreDuringBuilds: true,
-  },
   /* config options here */
 };
 
