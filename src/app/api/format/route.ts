@@ -60,11 +60,20 @@ async function formatReferences(
     throw new Error("Missing environment variables");
   }
 
+  // 确保 baseURL 不为空字符串
+  const baseURL = process.env.OPENAI_BASE_URL?.trim();
+  if (!baseURL) {
+    throw new Error("OPENAI_BASE_URL is empty or invalid");
+  }
+
   // 显式传入 baseURL，确保 OpenAI 中转服务正常工作
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
-    baseURL: process.env.OPENAI_BASE_URL, // 重点：必须显式读取这个变量
+    baseURL: baseURL, // 重点：必须显式读取这个变量，确保中转服务正常工作
   });
+
+  // 调试日志：确认 baseURL 已正确传入
+  console.log('OpenAI Client initialized with baseURL:', baseURL);
 
   const systemPrompt = `你是一个 GB/T 7714-2015 格式化专家。
 请处理用户的引用文本。
