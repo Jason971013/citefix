@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
-// 初始化 OpenAI 客户端（兼容 DeepSeek API）
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_BASE_URL,
-});
-
 export async function POST(request: NextRequest) {
   try {
     const { text } = await request.json();
@@ -44,6 +38,16 @@ export async function POST(request: NextRequest) {
 async function formatReferences(
   text: string
 ): Promise<{ formatted: string; status: string; changes: string[] }> {
+  // 在函数内部初始化 OpenAI 客户端，避免构建时检查 credentials
+  if (!process.env.OPENAI_API_KEY || !process.env.OPENAI_BASE_URL) {
+    throw new Error("Missing environment variables");
+  }
+
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: process.env.OPENAI_BASE_URL,
+  });
+
   const systemPrompt = `你是一个 GB/T 7714-2015 格式化专家。
 请处理用户的引用文本。
 
