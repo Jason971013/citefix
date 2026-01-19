@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
 export async function POST(request: NextRequest) {
+  // 调试日志：打印环境变量状态
+  console.log('Env Check:', { 
+    hasKey: !!process.env.OPENAI_API_KEY, 
+    baseUrl: process.env.OPENAI_BASE_URL 
+  });
+
   try {
     const { text } = await request.json();
 
@@ -26,7 +32,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("API Error:", error);
+    // 完善错误处理：打印完整的错误对象
+    console.error("API Error:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      error: error,
+    });
     return NextResponse.json(
       { error: "服务器错误，请稍后重试" },
       { status: 500 }
@@ -38,14 +49,21 @@ export async function POST(request: NextRequest) {
 async function formatReferences(
   text: string
 ): Promise<{ formatted: string; status: string; changes: string[] }> {
+  // 调试日志：打印环境变量状态
+  console.log('formatReferences Env Check:', { 
+    hasKey: !!process.env.OPENAI_API_KEY, 
+    baseUrl: process.env.OPENAI_BASE_URL 
+  });
+
   // 在函数内部初始化 OpenAI 客户端，避免构建时检查 credentials
   if (!process.env.OPENAI_API_KEY || !process.env.OPENAI_BASE_URL) {
     throw new Error("Missing environment variables");
   }
 
+  // 显式传入 baseURL，确保 OpenAI 中转服务正常工作
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
-    baseURL: process.env.OPENAI_BASE_URL,
+    baseURL: process.env.OPENAI_BASE_URL, // 重点：必须显式读取这个变量
   });
 
   const systemPrompt = `你是一个 GB/T 7714-2015 格式化专家。
@@ -232,14 +250,26 @@ ${text}
       };
     }
   } catch (error: any) {
-    console.error("OpenAI API Error:", error);
+    // 完善错误处理：打印完整的错误对象
+    console.error("OpenAI API Error:", {
+      message: error instanceof Error ? error.message : String(error),
+      status: error?.status,
+      statusText: error?.statusText,
+      response: error?.response ? {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data,
+      } : undefined,
+      stack: error instanceof Error ? error.stack : undefined,
+      error: error,
+    });
     
     // 提供更友好的错误信息
-    if (error.status === 401) {
+    if (error?.status === 401) {
       throw new Error("API 密钥无效");
-    } else if (error.status === 429) {
+    } else if (error?.status === 429) {
       throw new Error("请求过于频繁，请稍后重试");
-    } else if (error.status === 500) {
+    } else if (error?.status === 500) {
       throw new Error("API 服务器错误，请稍后重试");
     }
     
