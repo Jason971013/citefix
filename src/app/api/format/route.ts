@@ -5,6 +5,18 @@ import OpenAI from "openai";
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
+  // 🚨 DEEP DEBUG: Check what variables are actually available
+  const envDebug = {
+    nodeEnv: process.env.NODE_ENV,
+    vercelEnv: process.env.VERCEL_ENV, // Should be 'production' or 'preview'
+    // List ALL keys that contain 'OPENAI' (do not print values, just names)
+    openAiKeys: Object.keys(process.env).filter(k => k.includes('OPENAI')),
+    // Check specific key existence
+    hasApiKey: !!process.env.OPENAI_API_KEY,
+    hasBaseUrl: !!process.env.OPENAI_BASE_URL
+  };
+  console.log('🚨 DEEP DEBUG:', JSON.stringify(envDebug, null, 2));
+
   // 调试日志：打印环境变量状态（安全：不打印实际值）
   console.log('Env Check:', { 
     hasKey: !!process.env.OPENAI_API_KEY, 
